@@ -1,9 +1,9 @@
-package com.example.chatroomkafkabackenddbreactive.controller.controller;
+package com.example.chatroomkafkabackenddbreactive.controller;
 
-import com.example.chatroomkafkabackenddbreactive.dao.ChatRoomMessagesRepository;
-import com.example.chatroomkafkabackenddbreactive.dao.WordCountRepository;
-import com.example.chatroomkafkabackenddbreactive.pojo.ChatRoomMessage;
-import com.example.chatroomkafkabackenddbreactive.pojo.WordCount;
+import com.example.chatroomkafkabackenddbreactive.dao.ChatRoomDataRepository;
+import com.example.chatroomkafkabackenddbreactive.dao.WordCountDataRepository;
+import com.example.chatroomkafkabackenddbreactive.pojo.ChatRoomData;
+import com.example.chatroomkafkabackenddbreactive.pojo.WordCountData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,18 +21,18 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InitController {
 
-    private final ChatRoomMessagesRepository chatRoomMessagesRepository;
-    private final WordCountRepository wordCountRepository;
+    private final ChatRoomDataRepository chatRoomDataRepository;
+    private final WordCountDataRepository wordCountDataRepository;
 
     @GetMapping("/fetchMessageData")
-    public ResponseEntity<List<ChatRoomMessage>> getMessageDataFromDB() {
-        List<ChatRoomMessage> allData = chatRoomMessagesRepository.findAll();
+    public ResponseEntity<List<ChatRoomData>> getMessageDataFromDB() {
+        List<ChatRoomData> allData = chatRoomDataRepository.findAll();
         return new ResponseEntity<>(allData, HttpStatus.OK);
     }
 
     @GetMapping("/fetchWordData")
-    public ResponseEntity<List<WordCount>> getWordCountDataFromDB() {
-        List<WordCount> allData = wordCountRepository.findAll();
+    public ResponseEntity<List<WordCountData>> getWordCountDataFromDB() {
+        List<WordCountData> allData = wordCountDataRepository.findAll();
         return new ResponseEntity<>(allData, HttpStatus.OK);
     }
 }

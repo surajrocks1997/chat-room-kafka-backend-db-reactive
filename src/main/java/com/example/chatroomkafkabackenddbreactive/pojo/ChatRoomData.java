@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @Entity
-public class ChatRoomMessage {
+public class ChatRoomData {
 
     @Id
     private String chatRoomName;

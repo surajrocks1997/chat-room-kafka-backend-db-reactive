@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @Entity
-public class WordCount {
+public class WordCountData {
 
     @Id
     private String word;

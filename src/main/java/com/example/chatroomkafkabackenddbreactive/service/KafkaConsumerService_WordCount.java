@@ -1,9 +1,8 @@
 package com.example.chatroomkafkabackenddbreactive.service;
 
-import com.example.chatroomkafkabackenddbreactive.dao.WordCountRepository;
-import com.example.chatroomkafkabackenddbreactive.event.WordCountEvent;
-import com.example.chatroomkafkabackenddbreactive.pojo.ChatRoomMessage;
-import com.example.chatroomkafkabackenddbreactive.pojo.WordCount;
+import com.example.chatroomkafkabackenddbreactive.dao.WordCountDataRepository;
+import com.example.chatroomkafkabackenddbreactive.event.WordCountDataEvent;
+import com.example.chatroomkafkabackenddbreactive.pojo.WordCountData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -19,24 +18,24 @@ import org.springframework.stereotype.Service;
 public class KafkaConsumerService_WordCount {
 
     private final ApplicationEventPublisher eventPublisher;
-    private final WordCountRepository wordCountRepository;
+    private final WordCountDataRepository wordCountDataRepository;
 
     @KafkaHandler
     public void consumerWordCount(ConsumerRecord<String, Long> consumerRecord) {
-        WordCount currentWordCount = wordCountRepository.findById(consumerRecord.key()).orElse(new WordCount(consumerRecord.key(), 0L));
-        currentWordCount.setCount(currentWordCount.getCount() + Long.parseLong(String.valueOf(consumerRecord.value())));
-        WordCount finalWordCount = wordCountRepository.save(currentWordCount);
+        WordCountData currentWordCountData = wordCountDataRepository.findById(consumerRecord.key()).orElse(new WordCountData(consumerRecord.key(), 0L));
+        currentWordCountData.setCount(currentWordCountData.getCount() + Long.parseLong(String.valueOf(consumerRecord.value())));
+        WordCountData finalWordCountData = wordCountDataRepository.save(currentWordCountData);
 
-        eventPublisher.publishEvent(new WordCountEvent(finalWordCount));
+        eventPublisher.publishEvent(new WordCountDataEvent(finalWordCountData));
     }
 
     @KafkaHandler(isDefault = true)
     public void handleMessage(ConsumerRecord<String, Object> consumerRecord) {
-        WordCount currentWordCount = wordCountRepository.findById(consumerRecord.key()).orElse(new WordCount(consumerRecord.key(), 0L));
-        currentWordCount.setCount(currentWordCount.getCount() + Long.parseLong(String.valueOf(consumerRecord.value())));
-        WordCount finalWordCount = wordCountRepository.save(currentWordCount);
+        WordCountData currentWordCountData = wordCountDataRepository.findById(consumerRecord.key()).orElse(new WordCountData(consumerRecord.key(), 0L));
+        currentWordCountData.setCount(currentWordCountData.getCount() + Long.parseLong(String.valueOf(consumerRecord.value())));
+        WordCountData finalWordCountData = wordCountDataRepository.save(currentWordCountData);
 
-        eventPublisher.publishEvent(new WordCountEvent(finalWordCount));
+        eventPublisher.publishEvent(new WordCountDataEvent(finalWordCountData));
     }
 
 }

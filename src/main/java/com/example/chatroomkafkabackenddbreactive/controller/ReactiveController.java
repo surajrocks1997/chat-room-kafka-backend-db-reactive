@@ -1,9 +1,9 @@
 package com.example.chatroomkafkabackenddbreactive.controller;
 
-import com.example.chatroomkafkabackenddbreactive.event.ChatRoomMessageEvent;
-import com.example.chatroomkafkabackenddbreactive.event.WordCountEvent;
-import com.example.chatroomkafkabackenddbreactive.pojo.ChatRoomMessage;
-import com.example.chatroomkafkabackenddbreactive.pojo.WordCount;
+import com.example.chatroomkafkabackenddbreactive.event.ChatRoomDataEvent;
+import com.example.chatroomkafkabackenddbreactive.event.WordCountDataEvent;
+import com.example.chatroomkafkabackenddbreactive.pojo.ChatRoomData;
+import com.example.chatroomkafkabackenddbreactive.pojo.WordCountData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -26,28 +26,28 @@ import java.time.Duration;
 @Slf4j
 public class ReactiveController {
 
-    private final Sinks.Many<ChatRoomMessageEvent> sinkMessageData = Sinks.many().multicast().directAllOrNothing();
-    private final Sinks.Many<WordCountEvent> sinkWordCountData = Sinks.many().multicast().directAllOrNothing();
+    private final Sinks.Many<ChatRoomDataEvent> sinkMessageData = Sinks.many().multicast().directAllOrNothing();
+    private final Sinks.Many<WordCountDataEvent> sinkWordCountData = Sinks.many().multicast().directAllOrNothing();
 
     @EventListener
-    public void onChangeChatRoomMessage(ChatRoomMessageEvent event) {
+    public void onChangeChatRoomMessage(ChatRoomDataEvent event) {
         log.info("from On Change Chat Room Message Event");
         sinkMessageData.tryEmitNext(event);
     }
 
     @EventListener
-    public void onChangeWordCount(WordCountEvent event) {
+    public void onChangeWordCount(WordCountDataEvent event) {
         log.info("from On Word Count Event");
         sinkWordCountData.tryEmitNext(event);
     }
 
     @GetMapping(value = "/messageData", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<ServerSentEvent<ChatRoomMessage>> getMessageEvent() {
+    public Flux<ServerSentEvent<ChatRoomData>> getMessageEvent() {
         log.info("from On Change Chat Room Message Method");
-        return sinkMessageData.asFlux().map(event -> ServerSentEvent.<ChatRoomMessage>builder()
+        return sinkMessageData.asFlux().map(event -> ServerSentEvent.<ChatRoomData>builder()
                 .id(String.valueOf(System.currentTimeMillis()))
                 .event("messageEvent")
-                .data(event.chatRoomMessage())
+                .data(event.chatRoomData())
                 .retry(Duration.ofMillis(200))
                 .build());
 
@@ -56,13 +56,13 @@ public class ReactiveController {
     }
 
     @GetMapping(value = "/wordCountData", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<ServerSentEvent<WordCount>> getWordCount() {
+    public Flux<ServerSentEvent<WordCountData>> getWordCount() {
         log.info("from On Change Word Method");
 
-        return sinkWordCountData.asFlux().map(event -> ServerSentEvent.<WordCount>builder()
+        return sinkWordCountData.asFlux().map(event -> ServerSentEvent.<WordCountData>builder()
                 .id(String.valueOf(System.currentTimeMillis()))
                 .event("wordCountEvent")
-                .data(event.wordCount())
+                .data(event.wordCountData())
                 .retry(Duration.ofMillis(200))
                 .build());
 

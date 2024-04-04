@@ -1,8 +1,8 @@
 package com.example.chatroomkafkabackenddbreactive.service;
 
-import com.example.chatroomkafkabackenddbreactive.dao.ChatRoomMessagesRepository;
-import com.example.chatroomkafkabackenddbreactive.event.ChatRoomMessageEvent;
-import com.example.chatroomkafkabackenddbreactive.pojo.ChatRoomMessage;
+import com.example.chatroomkafkabackenddbreactive.dao.ChatRoomDataRepository;
+import com.example.chatroomkafkabackenddbreactive.event.ChatRoomDataEvent;
+import com.example.chatroomkafkabackenddbreactive.pojo.ChatRoomData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -18,25 +18,25 @@ import org.springframework.stereotype.Service;
 public class KafkaConsumerService_MessagePerRoom {
 
     private final ApplicationEventPublisher eventPublisher;
-    private final ChatRoomMessagesRepository chatRoomMessagesRepository;
+    private final ChatRoomDataRepository chatRoomDataRepository;
 
     @KafkaHandler
     public void consumeChatRoomMessages(ConsumerRecord<String, Long> consumerRecord) {
 
-        ChatRoomMessage currentChatRoom = chatRoomMessagesRepository.findById(consumerRecord.key()).orElse(new ChatRoomMessage(consumerRecord.key(), 0L));
+        ChatRoomData currentChatRoom = chatRoomDataRepository.findById(consumerRecord.key()).orElse(new ChatRoomData(consumerRecord.key(), 0L));
         currentChatRoom.setCount(currentChatRoom.getCount() + Long.parseLong(String.valueOf(consumerRecord.value())));
-        ChatRoomMessage finalChatRoom = chatRoomMessagesRepository.save(currentChatRoom);
+        ChatRoomData finalChatRoom = chatRoomDataRepository.save(currentChatRoom);
 
-        eventPublisher.publishEvent(new ChatRoomMessageEvent(finalChatRoom));
+        eventPublisher.publishEvent(new ChatRoomDataEvent(finalChatRoom));
     }
 
     @KafkaHandler(isDefault = true)
     public void handleMessage(ConsumerRecord<String, Object> consumerRecord) {
-        ChatRoomMessage currentChatRoom = chatRoomMessagesRepository.findById(consumerRecord.key()).orElse(new ChatRoomMessage(consumerRecord.key(), 0L));
+        ChatRoomData currentChatRoom = chatRoomDataRepository.findById(consumerRecord.key()).orElse(new ChatRoomData(consumerRecord.key(), 0L));
         currentChatRoom.setCount(currentChatRoom.getCount() + Long.parseLong(String.valueOf(consumerRecord.value())));
-        ChatRoomMessage finalChatRoom = chatRoomMessagesRepository.save(currentChatRoom);
+        ChatRoomData finalChatRoom = chatRoomDataRepository.save(currentChatRoom);
 
-        eventPublisher.publishEvent(new ChatRoomMessageEvent(finalChatRoom));
+        eventPublisher.publishEvent(new ChatRoomDataEvent(finalChatRoom));
     }
 
 }
