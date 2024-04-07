@@ -1,7 +1,8 @@
 package com.example.chatroomkafkabackenddbreactive.service;
 
 import com.example.chatroomkafkabackenddbreactive.dao.ChatRoomDataRepository;
-import com.example.chatroomkafkabackenddbreactive.event.ChatRoomDataEvent;
+import com.example.chatroomkafkabackenddbreactive.event.DataType;
+import com.example.chatroomkafkabackenddbreactive.event.EventDataWrapper;
 import com.example.chatroomkafkabackenddbreactive.pojo.ChatRoomData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +28,7 @@ public class KafkaConsumerService_MessagePerRoom {
         currentChatRoom.setCount(currentChatRoom.getCount() + Long.parseLong(String.valueOf(consumerRecord.value())));
         ChatRoomData finalChatRoom = chatRoomDataRepository.save(currentChatRoom);
 
-        eventPublisher.publishEvent(new ChatRoomDataEvent(finalChatRoom));
+        eventPublisher.publishEvent(new EventDataWrapper<ChatRoomData>(DataType.CHAT_ROOM_AGG_DATA, finalChatRoom));
     }
 
     @KafkaHandler(isDefault = true)
@@ -36,7 +37,7 @@ public class KafkaConsumerService_MessagePerRoom {
         currentChatRoom.setCount(currentChatRoom.getCount() + Long.parseLong(String.valueOf(consumerRecord.value())));
         ChatRoomData finalChatRoom = chatRoomDataRepository.save(currentChatRoom);
 
-        eventPublisher.publishEvent(new ChatRoomDataEvent(finalChatRoom));
+        eventPublisher.publishEvent(new EventDataWrapper<ChatRoomData>(DataType.CHAT_ROOM_AGG_DATA, finalChatRoom));
     }
 
 }

@@ -1,7 +1,8 @@
 package com.example.chatroomkafkabackenddbreactive.service;
 
 import com.example.chatroomkafkabackenddbreactive.dao.WordCountDataRepository;
-import com.example.chatroomkafkabackenddbreactive.event.WordCountDataEvent;
+import com.example.chatroomkafkabackenddbreactive.event.DataType;
+import com.example.chatroomkafkabackenddbreactive.event.EventDataWrapper;
 import com.example.chatroomkafkabackenddbreactive.pojo.WordCountData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +27,7 @@ public class KafkaConsumerService_WordCount {
         currentWordCountData.setCount(currentWordCountData.getCount() + Long.parseLong(String.valueOf(consumerRecord.value())));
         WordCountData finalWordCountData = wordCountDataRepository.save(currentWordCountData);
 
-        eventPublisher.publishEvent(new WordCountDataEvent(finalWordCountData));
+        eventPublisher.publishEvent(new EventDataWrapper<WordCountData>(DataType.WORD_COUNT_AGG_DATA, finalWordCountData));
     }
 
     @KafkaHandler(isDefault = true)
@@ -35,7 +36,7 @@ public class KafkaConsumerService_WordCount {
         currentWordCountData.setCount(currentWordCountData.getCount() + Long.parseLong(String.valueOf(consumerRecord.value())));
         WordCountData finalWordCountData = wordCountDataRepository.save(currentWordCountData);
 
-        eventPublisher.publishEvent(new WordCountDataEvent(finalWordCountData));
+        eventPublisher.publishEvent(new EventDataWrapper<WordCountData>(DataType.WORD_COUNT_AGG_DATA, finalWordCountData));
     }
 
 }
