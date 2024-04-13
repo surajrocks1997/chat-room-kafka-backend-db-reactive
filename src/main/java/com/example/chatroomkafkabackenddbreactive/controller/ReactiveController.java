@@ -1,7 +1,7 @@
 package com.example.chatroomkafkabackenddbreactive.controller;
 
-import com.example.chatroomkafkabackenddbreactive.event.ChatRoomDataEvent;
-import com.example.chatroomkafkabackenddbreactive.event.WordCountDataEvent;
+import com.example.chatroomkafkabackenddbreactive.event.DataType;
+import com.example.chatroomkafkabackenddbreactive.event.EventDataWrapper;
 import com.example.chatroomkafkabackenddbreactive.pojo.ChatRoomData;
 import com.example.chatroomkafkabackenddbreactive.pojo.WordCountData;
 import lombok.RequiredArgsConstructor;
@@ -26,47 +26,38 @@ import java.time.Duration;
 @Slf4j
 public class ReactiveController {
 
-    private final Sinks.Many<ChatRoomDataEvent> sinkMessageData = Sinks.many().multicast().directAllOrNothing();
-    private final Sinks.Many<WordCountDataEvent> sinkWordCountData = Sinks.many().multicast().directAllOrNothing();
+    private final Sinks.Many<EventDataWrapper<?>> sinkData = Sinks.many().multicast().directAllOrNothing();
 
     @EventListener
-    public void onChangeChatRoomMessage(ChatRoomDataEvent event) {
-        log.info("from On Change Chat Room Message Event");
-        sinkMessageData.tryEmitNext(event);
+    public void onChangeData(EventDataWrapper<?> event) {
+        log.info("from On Change Data Event");
+        sinkData.tryEmitNext(event);
     }
 
-    @EventListener
-    public void onChangeWordCount(WordCountDataEvent event) {
-        log.info("from On Word Count Event");
-        sinkWordCountData.tryEmitNext(event);
-    }
-
-    @GetMapping(value = "/messageData", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<ServerSentEvent<ChatRoomData>> getMessageEvent() {
+    @GetMapping(value = "/insightData", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<ServerSentEvent<?>> getMessageEvent() {
         log.info("from On Change Chat Room Message Method");
-        return sinkMessageData.asFlux().map(event -> ServerSentEvent.<ChatRoomData>builder()
-                .id(String.valueOf(System.currentTimeMillis()))
-                .event("messageEvent")
-                .data(event.chatRoomData())
-                .retry(Duration.ofMillis(200))
-                .build());
+        return sinkData.asFlux().map(event -> {
+            if (event.getDataType() == DataType.CHAT_ROOM_AGG_DATA)
+                return ServerSentEvent.<ChatRoomData>builder()
+                        .id(String.valueOf(System.currentTimeMillis()))
+                        .event(String.valueOf(event.getDataType()))
+                        .data((ChatRoomData) event.getData())
+                        .retry(Duration.ofMillis(200))
+                        .build();
 
-        //        return sinkMessageData.asFlux().map(
-//                event -> ServerSentEvent.<ChatRoomMessage>builder(event.chatRoomMessage()).build());
-    }
+            else if (event.getDataType() == DataType.WORD_COUNT_AGG_DATA)
+                return ServerSentEvent.<WordCountData>builder()
+                        .id(String.valueOf(System.currentTimeMillis()))
+                        .event(String.valueOf(event.getDataType()))
+                        .data((WordCountData) event.getData())
+                        .retry(Duration.ofMillis(200))
+                        .build();
 
-    @GetMapping(value = "/wordCountData", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<ServerSentEvent<WordCountData>> getWordCount() {
-        log.info("from On Change Word Method");
 
-        return sinkWordCountData.asFlux().map(event -> ServerSentEvent.<WordCountData>builder()
-                .id(String.valueOf(System.currentTimeMillis()))
-                .event("wordCountEvent")
-                .data(event.wordCountData())
-                .retry(Duration.ofMillis(200))
-                .build());
+            else return null;
 
-//        return sinkWordCountData.asFlux().map(
-//                event -> ServerSentEvent.<WordCount>builder(event.wordCount()).build());
+
+        });
     }
 }
